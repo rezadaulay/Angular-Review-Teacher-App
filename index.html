@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en" ng-app="ui.bootstrap.smr">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<title>St.Mary's Ryken High School Review</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="fonts/RBNo2/fonts.css">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/responsive.css">
+	<!--link rel="stylesheet" href="js/angular-ui-bootstrap/ui-bootstrap-custom-0.13.4-csp.css"-->
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	  EI9 and ealier not supported.You're using an UNSUPPORTED version of Internet Explorer
+    <![endif]-->
+</head>
+<body ng-controller="mainController as main" >
+	<div class="page-header">
+		<div class="container">
+			<h1>St.Mary's Ryken High School Review</h1>
+			<p>Reviews Submited by Parents,Students,and Faculty</p>
+			<!--button type="button" class="btn btn-default btn-md hidden-sm hidden-xs"><i class="fa fa-share"></i> Share</button-->
+		</div>
+	</div>
+
+	<div class="page-content">
+		<div class="container">
+			<div class="top-round"><img src="images/top-round.png" /></div>
+			<h1 class="font-center"><strong>SMR</strong> Reviews</h1>
+			<div class="clearfix"></div>
+			<div class="row">
+				<div class="col-xs-12 col-sm-5 col-md-5">
+					<div class="topcarouselctrl">
+					  <div class="middlecarouselctrl">
+						<carousel interval="5000" no-wrap="false">
+						  <slide ng-repeat="slide in mainSSlides" active="slide.active">
+							<img src="images/preload.gif" lazy-img="{{slide.image}}" class="img-center" ng-click="slide.openPopup()">
+						  </slide>
+						</carousel>
+					  </div>
+					</div>
+					<div class="clearfix"></div>
+					<button type="button" class="btn btn-default font-center btn-photo btn-md" ng-click="AddScPhoto()"><i class="fa fa-picture-o"></i> Upload Photo</button>
+				</div>
+				<div class="col-xs-12 col-sm-7 col-md-7 ng-fade" ng-show="showreviewCollection['school']">
+					<div ng-repeat="tCollection in reviewCollection.datas" class="well nobrd-xs {{ $first ? 'first' : '' }} {{ ( !commentExpand['school'] && $index === 1 ) || $last ? 'last' : '' }} {{ !commentExpand['school'] && $index > 1 ? 'ng-hide' : '' }}" ng-hide=" !commentExpand['school'] && $index > 1 " >
+						<div class="media slide-toggle" ng-hide=" !commentExpand['school'] && $index > 1 " >
+							<div class="media-body">
+									<h4 class="media-heading">
+										<span class="star" ng-init="x = tCollection.rating"><rating readonly="true"  ng-model="x" max="5" state-on="'fa fa-star'" state-off="'fa fa-star-o'"></rating></span>
+										<span class="date">
+										{{tCollection.dateCreated}}
+										</span>
+										<strong>{{tCollection.reviewer}}</strong>,{{tCollection.identity}}
+									</h4>
+									<p>{{ tCollection.comment | limitTo:commentLimit }}<a class="viewmore" ng-click="expandContent($event,tCollection.comment)" ng-if="tCollection.comment.length > commentLimit">...</a></p>
+									<like ng-class="{'lkrp': tCollection.pbtl }">
+									<p class="pull-left n-pull-xs" ng-show="tCollection.respond_like && tCollection.respond_like === 'like'">{{tCollection.helpful}} helpful</p>
+									<a ng-click="addLike($event,'like',tCollection)" class="pull-left n-pull-xs" ng-class="{'disable-a': tCollection.respond_like === 'like' }" ng-hide="tCollection.respond_like"><i class="fa fa-thumbs-up"></i> Helpful</a>
+									<a ng-click="addLike($event,'report',tCollection)" class="pull-left exclamation n-pull-xs" ng-class="{'disable-a': tCollection.respond_report === 'report' }" ng-hide="tCollection.respond_report && tCollection.respond_report !== 'report'"><i class="fa fa-exclamation-triangle"></i> Report</a>
+									</like>
+									<a ng-click="expandDiv('school')" class="review" ng-if=" !commentExpand['school'] && $index === 1  " >{{reviewCollection.total_items}} Reviews</a>
+						   </div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+					<pagination ng-hide="reviewCollection.total_items < reviewCollection.page_size  || !commentExpand['school']" boundary-links="true" total-items="reviewCollection.total_items" items-per-page="reviewCollection.page_size" ng-model="currentPage" class="pagination-md slide-toggle" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" ng-click="reviewCollection.changePage(this)"></pagination>
+					<div class="clearfix" ng-hide="!commentExpand['school']" ></div>
+					<button type="button" class="btn btn-green font-center btn-photo btn-md pull-right" ng-click="openReviewModal('school',reviewCollection.datas)" ><i class="fa fa-pencil"></i>&nbsp;&nbsp;Write A Review</button>
+				</div>
+				<div class="col-xs-12 col-sm-7 col-md-7 " ng-show="!showreviewCollection['school']">
+					<div class="list-preload">
+						<img src="images/preload.gif"/>
+						<p>Please Wait</p>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+					<h1 class="font-center pargt20-sm nopargb-sm nomargb-sm"><strong>Teacher</strong> Reviews</h1>
+			</div>
+
+		</div>
+		<div class="clearfix"></div>
+		<!-- teacher loop -->
+
+		<teacher infinite-scroll="myPagingFunction()" ng-repeat="tCollection in reviewteacherCollection.datas" ng-hide="teacher_page === 1 && !showreviewCollection['teacher']">
+		<div class="container" class="ng-fade" id="teacher-{{tCollection.id}}">
+			<div class="list-group">
+				<div class="row list-group-list">
+					<div class="col-md-5 col-sm-5 col-xs-12">
+						<div class="list-photo col-md-3 nopadd">
+							<div class="frame">
+								<img src="{{tCollection.resizingPath}}" alt="{{tCollection.fullname}}">
+							</div>
+							<div class="clearfix"></div>
+							<p>
+								<span class="star" ng-init="tCollection.rating"><rating readonly="true"  ng-model="tCollection.rating" max="5" state-on="'fa fa-star'" state-off="'fa fa-star-o'" ></rating></span>
+								{{tCollection.reviewCollection.total_items}} Reviews
+							</p>
+							<p class="alert-danger sm" ng-show="tCollection.rating_danger" >Rating cannot be processed right now</p>
+						</div>
+						<div class="list-desc col-md-6 nopaddr">
+							<h4>{{tCollection.fullName}}</h4>
+							<p>{{tCollection.title}}</p>
+
+							<button type="button" class="btn btn-green font-center btn-photo btn-md pull-left" ng-click="openReviewModal('teacher',tCollection)"><i class="fa fa-pencil"></i>&nbsp;&nbsp;Write A Review</button>
+							<div class="clearfix"></div>
+							<a class="pull-left n-pull-xs n-pull-sm facebook-square" ng-click="shareFb(tCollection)"><i class="fa fa-facebook-square"></i></a>
+							<a class="pull-left n-pull-xs n-pull-sm envelope-square" ng-click="shareEmail(tCollection)"><i class="fa fa-envelope-square"></i></a>
+						</div>
+						<div class="clearfix"></div>
+						<div class="col-xs-12 list-subscribe nopaddl nopaddr">
+							<p>Receive Email Updates When New Reviews Are Posted For {{tCollection.firstName}}</p>
+						</div>
+						<form class="ng-fade" name="addsubscribeForm" ng-submit="tCollection.sendSB(tCollection)" novalidate ng-hide="tCollection.form.addsubscribe.success || tCollection.form.addsubscribe.processing">
+							<div class="col-md-9 col-xs-12 col-sm-12 nopaddl nopaddr" ng-class="{ 'has-error': !tCollection.form.addsubscribe.sbemail }">
+								<input type="text" class="form-control" id="email" placeholder="Email"
+								ng-model="tCollection.form.sbemail"
+								required
+								>
+								<div class="help-block" ng-show="!tCollection.form.addsubscribe.sbemail ">
+									<p ng-message="required">This field is required & fill with email.</p>
+								</div>
+							</div>
+							<div class="col-md-3 col-xs-12 col-sm-12 nopaddr">
+								<button type="submit" class="btn btn-default btn-sm btn-green light-book" ng-class="{'has-error':tCollection.form.addsubscribe.danger}"><i class="fa fa-paper-plane"></i> Submit</button>
+							</div>
+						</form>
+						<div class="col-md-12 ng-fade" ng-show="tCollection.form.addsubscribe.processing">
+							<div class="list-preload nomargt">
+								<img src="images/preload.gif"/>
+								<p>Please Wait</p>
+							</div>
+						</div>
+						<div class="col-xs-12 ng-fade" ng-show="tCollection.form.addsubscribe.success">
+							<p class="msg-success"><i class="fa fa-check-circle-o"></i> You're Subscribed !!!</p>
+						</div>
+						<div class="col-xs-12 ng-fade" ng-show="tCollection.form.addsubscribe.danger">
+							<p class="alert-danger sm"><i class="fa fa-times-circle-o"></i> Subscribtion cannot be processed right now</p>
+						</div>
+					</div>
+
+					<div class="col-xs-12 col-sm-7 col-md-7 ng-fade" ng-show="tCollection.showreviewCollection">
+					<div ng-repeat="trCollection in tCollection.reviewCollection.datas" class="well nobrd-xs {{ $first ? 'first' : '' }} {{ ( !commentExpand['teacher_'+tCollection.id] && $index === 1 ) || $last ? 'last' : '' }} {{ !commentExpand['teacher_'+tCollection.id] && $index > 1 ? 'ng-hide' : '' }}" ng-hide=" !commentExpand['teacher_'+tCollection.id] && $index > 1 " >
+						<div class="media slide-toggle" ng-hide=" !commentExpand['teacher_'+tCollection.id] && $index > 1 " >
+							<div class="media-body">
+									<h4 class="media-heading">
+										<span class="star" ng-init="x = trCollection.rating"><rating readonly="true"  ng-model="x" max="5" state-on="'fa fa-star'" state-off="'fa fa-star-o'"></rating></span>
+										<span class="date">
+										{{trCollection.dateCreated}}
+										</span>
+										<strong>{{trCollection.reviewer}}</strong>,{{trCollection.identity}}
+									</h4>
+									<p>{{ trCollection.comment | limitTo:commentLimit }}<a class="viewmore" ng-click="expandContent($event,trCollection.comment)" ng-if="trCollection.comment.length > commentLimit">...</a></p>
+									<like ng-class="{'lkrp': trCollection.pbtl }">
+									<p class="pull-left n-pull-xs" ng-show="trCollection.respond_like && trCollection.respond_like === 'like'">{{trCollection.helpful}} helpful</p>
+									<a ng-click="addLike($event,'like',trCollection)" class="pull-left n-pull-xs" ng-class="{'disable-a': trCollection.respond_like === 'like' }" ng-hide="trCollection.respond_like"><i class="fa fa-thumbs-up"></i> Helpful</a>
+									<a ng-click="addLike($event,'report',trCollection)" class="pull-left exclamation n-pull-xs" ng-class="{'disable-a': trCollection.respond_report === 'report' }" ng-hide="trCollection.respond_report && trCollection.respond_report !== 'report'"><i class="fa fa-exclamation-triangle"></i> Report</a>
+									</like>
+									<a ng-click="expandDiv('teacher_'+tCollection.id)" class="review" ng-if=" !commentExpand['teacher_'+tCollection.id] && $index === 1  " >{{tCollection.reviewCollection.total_items}} Reviews</a>
+						   </div>
+						</div>
+					</div>
+					<p class="befirst" ng-show="!tCollection.reviewCollection.total_items">Be the first review !</p>
+					<div class="clearfix"></div>
+					<pagination ng-hide="tCollection.reviewCollection.total_items < tCollection.reviewCollection.page_size  || !commentExpand['teacher_'+tCollection.id]" boundary-links="true" total-items="tCollection.reviewCollection.total_items" items-per-page="tCollection.reviewCollection.page_size" ng-model="tCollection.idq" class="pagination-md slide-toggle" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" ng-click="tCollection.reviewCollection.changePage(tCollection.idq)"></pagination>
+					<div class="clearfix" ng-hide="!commentExpand['teacher_'+tCollection.id]" ></div>
+					<button type="button" class="btn btn-green font-center btn-photo btn-md pull-right" ng-click="openReviewModal('teacher',tCollection)"><i class="fa fa-pencil"></i>&nbsp;&nbsp;Write A Review</button>
+				</div>
+				<div class="col-xs-12 col-sm-7 col-md-7 " ng-show="!tCollection.showreviewCollection">
+					<div class="list-preload">
+						<img src="images/preload.gif"/>
+						<p>Please Wait</p>
+					</div>
+				</div>
+
+				</div>
+			</div>
+		</div>
+		<hr ng-hide="$last"/>
+		</teacher>
+		<div class="container" ng-show="!showreviewCollection['teacher']">
+			<div class="row">
+				<div class="col-md-12 col-sm-12 col-xs-12">
+					<div class="list-preload nomargt">
+						<img src="images/preload.gif"/>
+						<p>Please Wait</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="clearfix"></div>
+		<!--paging ng-if="reviewteacherCollection.total_items > reviewteacherCollection.page_size" ng-show="showreviewCollection['teacher']">
+			<hr ng-hide="!showreviewCollection['teacher']" />
+			<pagination boundary-links="true" total-items="reviewteacherCollection.total_items" items-per-page="reviewteacherCollection.page_size" ng-model="currentPage" class="pagination-md slide-toggle" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" ng-click="reviewteacherCollection.changePage(this)"></pagination>
+			<div class="clearfix" ></div>
+		</paging-->
+		<br>
+		<!-- <hr class="last"/> -->
+		<!-- teacher loop -->
+		<div class="page-white">
+			<div class="container">
+				<div class="row ">
+					<div class="col-md-2 col-xs-12">
+						<h3><strong>Add A</strong> Teacher</h3>
+					</div>
+					<div class="col-md-7 col-xs-12">
+						<div class="col-md-12 col-xs-12 ng-fade" ng-show="form.addteacher.success">
+							<p class="msg-success"><i class="fa fa-check-circle-o"></i> Thanks You !!!</p>
+						</div>
+						<div class="col-md-12 col-xs-12 ng-fade alert alert-danger" ng-show="form.addteacher.danger">
+							<p><strong>Error!</strong> {{form.addteacher.qdanger}}</p>
+						</div>
+						<div class="col-md-12 col-xs-7 ng-fade" ng-show="form.addteacher.processing">
+							<div class="list-preload nomargt">
+								<img src="images/preload.gif"/>
+								<p>Please Wait</p>
+							</div>
+						</div>
+						<form class="ng-fade" name="addteacherForm" ng-submit="sendAT()" novalidate ng-hide="form.addteacher.success || form.addteacher.processing">
+							<div class="col-md-6 col-sm-12" ng-class="{ 'has-error': !form.addteacher.atfirstname }" >
+								<input type="text" class="form-control" placeholder="First Name"
+								id="form.addteacher.firstname"
+								ng-model="form.addteacher.firstname"
+								required
+								>
+								<div class="help-block" ng-show="!form.addteacher.atfirstname ">
+									<p ng-message="required">This field is required.</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10 visible-sm-block visible-xs-block"></div>
+							<div class="col-md-6 col-sm-12" ng-class="{ 'has-error': !form.addteacher.atlastname }" >
+								<input type="text" class="form-control" placeholder="Last Name"
+								id="form.addteacher.lastname"
+								ng-model="form.addteacher.lastname"
+								required
+								>
+								<div class="help-block" ng-show="!form.addteacher.atlastname ">
+									<p ng-message="required">This field is required.</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10"></div>
+							<div class="col-md-12 col-xs-12" ng-class="{ 'has-error': !form.addteacher.attitle }" >
+								<input type="text" class="form-control" placeholder="Title (Teacher, Counselor, Principal, etc)"
+								id="form.addteacher.title"
+								ng-model="form.addteacher.title"
+								required
+								>
+								<div class="help-block" ng-show="!form.addteacher.attitle ">
+									<p ng-message="required">This field is required.</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10"></div>
+							<div class="col-md-6 col-xs-12" ng-class="{ 'has-error': !form.addteacher.atgradetaught }" >
+								<input type="text" class="form-control" placeholder="Grade Taught"
+								id="form.addteacher.gradetaught"
+								ng-model="form.addteacher.gradetaught"
+								required
+								>
+								<div class="help-block" ng-show="!form.addteacher.atgradetaught ">
+									<p ng-message="required">This field is required.</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10 visible-sm-block visible-xs-block"></div>
+							<div class="col-md-6 col-xs-12" ng-class="{ 'has-error': !form.addteacher.atsubjects }" >
+								<input type="text" class="form-control" placeholder="Subjects"
+								id="form.addteacher.subjects"
+								ng-model="form.addteacher.subjects"
+								required
+								>
+								<div class="help-block" ng-show="!form.addteacher.atsubjects ">
+									<p ng-message="required">This field is required.</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10"></div>
+							<div class="col-md-6 col-xs-12" ng-class="{ 'has-error': form.addteacher.atfile }" >
+								<button type="button" class="btn btn-default btn-sm pull-left col-xs-12"
+									ngf-select
+									ng-model="form.addteacher.file"
+									id="form.addteacher.file"
+									ngf-pattern="'image/*'"
+									accept="image/*"
+								> <span ng-show="!form.addteacher.file.name"> <i class="fa fa-picture-o"></i> Upload Photo </span> <span ng-show="form.addteacher.file.name"> Photo Selected </span> </button>
+								<div class="col-xs-12 margt10 visible-sm-block visible-xs-block" ng-show="!form.addteacher.atfile "></div>
+								<div class="help-block" ng-show="form.addteacher.atfile ">
+									<p ng-message="required">{{form.addteacher.atfile}}</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10 visible-sm-block visible-xs-block"></div>
+							<div class="col-md-6 col-sm-12 col-xs-12 "  ng-class="{ 'has-error': !form.addteacher.qcaptcha }">
+								<div class="vc-recaptcha pull-right"
+									vc-recaptcha
+									theme="'clean'"
+									key="form.addteacher.recaptcha.key"
+									on-create="form.addteacher.recaptcha.setWidgetId(widgetId)"
+									on-success="form.addteacher.recaptcha.setResponse(response)"
+									on-expire="form.addteacher.recaptcha.cbExpiration()"
+								></div>
+								<div class="help-block" ng-show="!form.addteacher.qcaptcha ">
+									<p ng-message="required">Wrong Captcha.</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10"></div>
+							<div class="col-xs-12">
+								<button type="submit" class="btn btn-green font-center btn-sm pull-right"><i class="fa fa-check-circle-o"></i> Submit</button>
+							</div>
+
+
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="clearfix"></div>
+			<hr>
+			<div class="container">
+				<div class="row ">
+					<div class="col-md-4 col-xs-12">
+						<h3><strong>Questions, Feedback? </strong> <br>We Want To Hear From You</h3>
+					</div>
+					<div class="col-md-5 col-xs-12">
+						<div class="col-md-12 col-xs-12 ng-fade" ng-show="form.question.success">
+							<p class="msg-success"><i class="fa fa-check-circle-o"></i> Thanks You !!!</p>
+						</div>
+						<div class="col-md-12 col-xs-12 ng-fade alert alert-danger" ng-show="form.question.danger">
+							<p><strong>Error!</strong> {{form.question.qdanger}}</p>
+						</div>
+						<div class="col-md-12 col-xs-7 ng-fade" ng-show="form.question.processing">
+							<div class="list-preload nomargt">
+								<img src="images/preload.gif"/>
+								<p>Please Wait</p>
+							</div>
+						</div>
+						<form class="ng-fade" name="questionsForm" ng-submit="sendQ()" novalidate ng-hide="form.question.success || form.question.processing">
+							<div class="col-md-12 col-xs-12" ng-class="{ 'has-error': !form.question.qsubject }" >
+								<textarea class="form-control" rows="5" name="qsubject"
+								ng-model="form.question.subject"
+								id="questionForm-subject"
+								required
+								></textarea>
+								<div class="help-block" ng-show="!form.question.qsubject ">
+									<p ng-message="required">This field is required.</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10"></div>
+							<div class="col-md-12 col-xs-12 "  ng-class="{ 'has-error': !form.question.qcaptcha }">
+								<div class="vc-recaptcha pull-right"
+									vc-recaptcha
+									theme="'clean'"
+									key="form.question.recaptcha.key"
+									on-create="form.question.recaptcha.setWidgetId(widgetId)"
+									on-success="form.question.recaptcha.setResponse(response)"
+									on-expire="form.question.recaptcha.cbExpiration()"
+								></div>
+								<div class="help-block" ng-show="!form.question.qcaptcha ">
+									<p ng-message="required">Wrong Captcha.</p>
+								</div>
+							</div>
+							<div class="col-xs-12 margt10"></div>
+							<div class="col-md-12 col-xs-12 ">
+								<button type="submit" class="btn btn-green font-center btn-sm pull-right"><i class="fa fa-check-circle-o"></i> Submit</button>
+							</div>
+
+
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="page-green">
+			<div class="container">
+				<blockquote>
+					<p>
+						St. Mary's Ryken Review was inspired by members of the community who want to help parents, teachers and students stay connected  through an open forum. We are not affiliated with St. Mary's Ryken High School.
+					</p>
+				</blockquote>
+			</div>
+		</div>
+	</div>
+	<div id="fb-root"></div>
+	<script type="text/ng-template" id="ReviewModalContent.html">
+        <div class="modal-header">
+			<button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+            <h3 class="modal-title"><strong>Write a Review for </strong>{{form.addreviewForm.modalTitle}}</h3>
+        </div>
+		<div class="list-preload" ng-show="form.addreviewForm.processing" >
+			<img src="images/preload.gif"/>
+			<p>Please Wait</p>
+		</div>
+        <div class="modal-body" ng-class="{'half-opa' : form.addreviewForm.processing}">
+			<div class="alert alert-danger col-xs-12" ng-show="form.addreviewForm.danger" >
+			  <p><strong>Error!</strong> Write Review cannot be processed right now.</p>
+			</div>
+			<div class="alert alert-success col-xs-12" ng-show="form.addreviewForm.success" >
+			  <p><strong>Success!</strong> Thank You For Your Review.</p>
+			</div>
+            <form class="row addreviewForm" name="addreviewForm" novalidate ng-hide="form.addreviewForm.success" >
+				<div class="col-md-3 col-xs-12 col-sm-12">
+					<label>Select Your Rating</label>
+				</div>
+
+				<div class="col-md-9 col-xs-12 col-sm-12 " ng-class="{ 'has-error': !form.addreviewForm.atrating }" >
+					<span id="addreviewForm-rating" class="star" ng-init="x = 0"><rating readonly="false"  ng-model="form.addreviewForm.rating" max="5" state-on="'fa fa-star'" state-off="'fa fa-star gray'" ng-model="form.addreviewForm.rating" ></rating></span>
+					<div class="help-block" ng-show="!form.addreviewForm.atrating ">
+						<p ng-message="required">This field is required.</p>
+					</div>
+				</div>
+				<div class="col-xs-12 margt10"></div>
+				<div class="col-md-3 col-xs-12 col-sm-12">
+					<label>Post My Review</label>
+				</div>
+				<div class="col-md-9 col-xs-12 col-sm-12 " ng-class="{ 'has-error': !form.addreviewForm.atreviewer }" >
+					<div class="radio first t-left" ng-class="{ 'has-error': !form.addreviewForm.atreviewer } ">
+						<label><input type="radio" id="addreviewForm-reviewer" ng-model="form.addreviewForm.reviewer" value="Anonymous" >Anonymous</label>
+					</div>
+					<div class="radio last t-left" ng-class="{ 'has-error': !form.addreviewForm.atreviewer } ">
+						<div class="col-md-3 col-sm-12 nopadd">
+							<label><input type="radio" id="addreviewForm-reviewer" ng-model="form.addreviewForm.reviewer" value="myname" >With my name</label>
+						</div>
+
+						<div class="col-xs-12 margt10 visible-sm-block visible-xs-block"></div>
+						<div class="col-md-4 col-sm-offset-3 col-md-offset-0 col-sm-6 col-xs-12" ng-class="{ 'has-error': !form.addreviewForm.atfirstname }" >
+							<input type="text" class="form-control" id="addreviewForm-firstname" id="firstname" placeholder="First Name"
+							name="atfirstname"
+							ng-model="form.addreviewForm.firstname"
+							>
+							<div class="help-block" ng-show="!form.addreviewForm.atfirstname ">
+								<p ng-message="required">This field is required.</p>
+							</div>
+						</div>
+						<div class="col-xs-12 margt10 visible-sm-block visible-xs-block"></div>
+						<div class="col-md-4 col-sm-offset-3 col-md-offset-0 col-sm-6 col-xs-12" ng-class="{ 'has-error': !form.addreviewForm.atlastname }" >
+							<input type="text" class="form-control" id="addreviewForm-lastname" id="lastname" placeholder="Last Name"
+							name="atlastname"
+							ng-model="form.addreviewForm.lastname"
+							required
+							>
+							<div class="help-block" ng-show="!form.addreviewForm.atlastname ">
+								<p ng-message="required">This field is required.</p>
+							</div>
+						</div>
+
+						<div class="help-block" ng-show="!form.addreviewForm.atreviewer " ng-class="{ 'has-error': !form.addreviewForm.atreviewer } " >
+							<div class="clearfix"></div>
+							<p ng-message="required">This field is required.</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-12 margt10 hidden-xs"></div>
+				<div class="col-md-3 col-xs-12 col-sm-12">
+					<label>I Am A</label>
+				</div>
+				<div class="col-md-9 col-xs-12 col-sm-12 " ng-class="{ 'has-error': !form.addreviewForm.atidentity }" >
+					<div class="radio first"  ng-class="{ 'has-error': !form.addreviewForm.atidentity }" >
+						<label><input type="radio" name="optradio"
+							value="Student"
+							id="addreviewForm-identity"
+							ng-model="form.addreviewForm.identity"
+							required
+						>Student</label>
+					</div>
+					<div class="radio first"  ng-class="{ 'has-error': !form.addreviewForm.atidentity }" >
+						<label><input type="radio" name="optradio"
+							value="Parent"
+							id="addreviewForm-identity"
+							ng-model="form.addreviewForm.identity"
+							required
+						>Parent</label>
+					</div>
+					<div class="radio">
+						<label><input type="radio" name="optradio"
+							value="Faculty"
+							id="addreviewForm-identity"
+							ng-model="form.addreviewForm.identity"
+							required
+						>Faculty</label>
+					</div>
+					<div class="help-block" ng-show="!form.addreviewForm.atidentity ">
+						<p ng-message="required">This field is required.</p>
+					</div>
+				</div>
+				<div class="col-xs-12 margt10"></div>
+				<div class="col-md-3 col-xs-12 col-sm-12">
+					<label>Write review</label>
+				</div>
+				<div class="col-md-9 col-xs-12 col-sm-12 " ng-class="{ 'has-error': !form.addreviewForm.atreview }" >
+					<textarea class="form-control" rows="5" name="qsubject"
+					id="addreviewForm-review"
+					ng-model="form.addreviewForm.review"
+					required
+					></textarea>
+					<div class="help-block" ng-show="!form.addreviewForm.atreview ">
+						<p ng-message="required">This field is required.</p>
+					</div>
+				</div>
+			</form>
+        </div>
+        <div class="modal-footer" ng-class="{'half-opa' : form.addreviewForm.processing}">
+            <button type="button" class="btn btn-green font-center btn-photo btn-md pull-right" ng-disabled="form.addreviewForm.processing" ng-click="ok()"><i class="fa fa-pencil"></i>&nbsp;&nbsp;Submit Review</button>
+        </div>
+    </script>
+	<script type="text/ng-template" id="ZoomImageModalContent.html">
+        <div class="modal-header">
+			<button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+			<h3 class="modal-title">Open Image</h3>
+        </div>
+        <div class="modal-body">
+			<img src="images/preload.gif" lazy-img="{{modal_image}}" class="img-center img-responsive" />
+        </div>
+    </script>
+	<script type="text/ng-template" id="EmailModalContent.html">
+        <div class="modal-header">
+			<button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+            <h3 class="modal-title">Type Your Email</h3>
+        </div>
+		<div class="list-preload" ng-show="form.addEmailform.processing" >
+			<img src="images/preload.gif"/>
+			<p>Please Wait</p>
+		</div>
+        <div class="modal-body" ng-class="{'half-opa' : form.addEmailform.processing}">
+			<div class="alert alert-danger col-xs-12" ng-show="form.addEmailform.danger" >
+			  <p><strong>Error!</strong> {{form.addEmailform.qdanger}}</p>
+			</div>
+			<div class="alert alert-success col-xs-12" ng-show="form.addEmailform.success" >
+			  <p><strong>Success!</strong> Thank You.</p>
+			</div>
+            <form class="row addreviewForm" name="addEmailform" novalidate ng-hide="form.addEmailform.success" >
+				<div class="col-md-3 col-xs-12 col-sm-12">
+					<label>Email</label>
+				</div>
+
+				<div class="col-md-9 col-xs-12 col-sm-12 " ng-class="{ 'has-error': !form.addEmailform.atemail }" >
+					<input type="email" class="form-control" id="addEmailform-email" id="email" placeholder="Email"
+					name="atemail"
+					ng-model="form.addEmailform.email"
+					>
+					<div class="help-block" ng-show="!form.addEmailform.atemail ">
+						<p ng-message="required">This field is required & fill with email.</p>
+					</div>
+				</div>
+
+			</form>
+        </div>
+        <div class="modal-footer" ng-class="{'half-opa' : form.addEmailform.processing}">
+            <button type="button" class="btn btn-green font-center btn-photo btn-md pull-right" ng-disabled="form.addreviewForm.processing" ng-click="ok()"><i class="fa fa-pencil"></i>&nbsp;&nbsp;Submit</button>
+        </div>
+    </script>
+	<script type="text/ng-template" id="AddSliderModalContent.html">
+        <div class="modal-header">
+			<button type="button" class="close" ng-click="cancel()"><i class="fa fa-times"></i></button>
+            <h3 class="modal-title">Add School Image</h3>
+        </div>
+		<div class="list-preload" ng-show="form.addSlider.processing" >
+			<img src="images/preload.gif"/>
+			<p>Please Wait</p>
+		</div>
+        <div class="modal-body" ng-class="{'half-opa' : form.addSlider.processing}">
+			<div class="alert alert-danger col-xs-12" ng-show="form.addSlider.danger" >
+			  <p><strong>Error!</strong> {{form.addSlider.qdanger}}</p>
+			</div>
+			<div class="alert alert-success col-xs-12" ng-show="form.addSlider.success" >
+			  <p><strong>Success!</strong> Thank You.</p>
+			</div>
+            <form class="row addreviewForm" name="addSlider" novalidate ng-hide="form.addSlider.success" >
+				<div class="col-md-3 col-xs-12 col-sm-12">
+					<label>Image</label>
+				</div>
+
+				<div class="col-md-9 col-xs-12 col-sm-12 " ng-class="{ 'has-error': form.addSlider.atfile }" >
+					<div class="bootstrap-filestyle input-group">
+						<input type="text" class="form-control " placeholder="" disabled="" value="{{form.addSlider.file.name}}">
+						<span class="group-span-filestyle input-group-btn" tabindex="0">
+							<label for="filestyle-1" class="btn btn-default ">
+								<span ngf-select
+									ng-model="form.addSlider.file"
+									name="form.addSlider.file"
+									ngf-pattern="'image/*'"
+									accept="image/*" class="buttonText"><i class="fa fa-file-image-o"></i> Choose Image</span>
+							</label>
+						</span>
+					</div>
+
+					<div class="help-block" ng-show="form.addSlider.atfile ">
+						<p ng-message="required">{{form.addSlider.atfile}}</p>
+					</div>
+				</div>
+
+			</form>
+        </div>
+        <div class="modal-footer" ng-class="{'half-opa' : form.addSlider.processing}">
+            <button type="button" class="btn btn-green font-center btn-photo btn-md pull-right" ng-disabled="form.addSlider.processing" ng-click="ok()"><i class="fa fa-pencil"></i>&nbsp;&nbsp;Submit</button>
+        </div>
+    </script>
+	<script type="text/ng-template" id="alert-success.html">
+		<div class="alert alert-success" role="alert">
+		  <p ng-transclude></p>
+		</div>
+	</script>
+	<script type="text/ng-template" id="alert-danger.html">
+		<div class="alert alert-danger" role="alert">
+		  <strong ng-transclude></strong>
+		</div>
+	</script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-cookies.min.js"></script>
+	<script src="js/angular-ui-bootstrap/ui-bootstrap-custom-tpls-0.13.4.min.js"></script>
+	<script src="js/angular-lazyload/angular-lazy-img.min.js"></script>
+	<script src="js/angular-file/ng-file-upload-shim.min.js"></script>
+	<script src="js/angular-file/ng-file-upload.min.js"></script>
+	<script src="//www.google.com/recaptcha/api.js?render=explicit&onload=vcRecaptchaApiLoaded" async defer></script>
+	<script src="js/angular-recaptcha/angular-recaptcha.min.js"></script>
+	<script src="js/angular-infinite-scroll/ng-infinite-scroll.min.js"></script>
+	<script src="js/app/app.js"></script>
+</body>
+</html>
